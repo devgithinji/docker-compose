@@ -1,0 +1,70 @@
+version: "3.8"
+
+services:
+  configserver:
+    image: densoftdev/configserver:latest
+    mem_reservation: 700m
+    ports:
+      - "5003:5003"
+    networks:
+      - eazybank-network
+
+  accounts:
+    image: densoftdev/accounts:latest
+    mem_reservation: 700m
+    ports:
+      - "5000:5000"
+    networks:
+      - eazybank-network
+    depends_on:
+      - configserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
+
+  loans:
+    image: densoftdev/loans:latest
+    mem_reservation: 700m
+    ports:
+      - "5001:5001"
+    networks:
+      - eazybank-network
+    depends_on:
+      - configserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
+
+  cards:
+    image: densoftdev/cards:latest
+    mem_reservation: 700m
+    ports:
+      - "5002:5002"
+    networks:
+      - eazybank-network
+    depends_on:
+      - configserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
+      
+networks:
+  eazybank-network:
