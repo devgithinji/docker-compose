@@ -9,11 +9,11 @@ services:
     networks:
       - eazybank-network
 
-  accounts:
-    image: densoftdev/accounts:latest
+  eurekaserver:
+    image: densoftdev/eurekaserver:latest
     mem_reservation: 700m
     ports:
-      - "5000:5000"
+      - "5004:5004"
     networks:
       - eazybank-network
     depends_on:
@@ -27,6 +27,29 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
+
+
+
+  accounts:
+    image: densoftdev/accounts:latest
+    mem_reservation: 700m
+    ports:
+      - "5000:5000"
+    networks:
+      - eazybank-network
+    depends_on:
+      - configserver
+      - eurekaserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:5004/eureka/
 
   loans:
     image: densoftdev/loans:latest
@@ -37,6 +60,7 @@ services:
       - eazybank-network
     depends_on:
       - configserver
+      - eurekaserver
     deploy:
       restart_policy:
         condition: on-failure
@@ -46,6 +70,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:5004/eureka/
 
   cards:
     image: densoftdev/cards:latest
@@ -56,6 +81,7 @@ services:
       - eazybank-network
     depends_on:
       - configserver
+      - eurekaserver
     deploy:
       restart_policy:
         condition: on-failure
@@ -65,6 +91,9 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:5004/eureka/
+
+
       
 networks:
   eazybank-network:
