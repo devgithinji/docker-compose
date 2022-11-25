@@ -1,13 +1,32 @@
 version: "3.8"
 
 services:
+  zipkin:
+    image: openzipkin/zipkin
+    mem_reservation: 700m
+    ports:
+      - "9411:9411"
+    networks:
+      - eazybank-network
+
   configserver:
     image: densoftdev/configserver:latest
     mem_reservation: 700m
     ports:
       - "5003:5003"
+    depends_on:
+      - zipkin
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
     networks:
       - eazybank-network
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
 
   eurekaserver:
     image: densoftdev/eurekaserver:latest
@@ -27,6 +46,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
 
 
 
@@ -50,6 +70,7 @@ services:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:5004/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
 
   loans:
     image: densoftdev/loans:latest
@@ -71,6 +92,7 @@ services:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:5004/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
 
   cards:
     image: densoftdev/cards:latest
@@ -92,6 +114,7 @@ services:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:5004/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
 
   gatewayserver:
     image: densoftdev/gatewayserver:latest
@@ -116,6 +139,7 @@ services:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:5004/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
 
 
       
