@@ -21,7 +21,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-        delay: 10s
+        delay: 15s
         max_attempts: 3
         window: 120s
     environment:
@@ -43,7 +43,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-        delay: 15s
+        delay: 30s
         max_attempts: 3
         window: 120s
     environment:
@@ -64,7 +64,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-        delay: 15s
+        delay: 30s
         max_attempts: 3
         window: 120s
     environment:
@@ -85,9 +85,33 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-        delay: 15s
+        delay: 30s
         max_attempts: 3
         window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:5004/eureka/
+
+  gatewayserver:
+    image: densoftdev/gatewayserver:latest
+    mem_reservation: 700m
+    ports:
+      - "5005:5005"
+    networks:
+      - eazybank-network
+    depends_on:
+      - configserver
+      - eurekaserver
+      - cards
+      - loans
+      - accounts
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 45s
+        max_attempts: 3
+        window: 180s
     environment:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
