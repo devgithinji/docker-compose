@@ -49,6 +49,27 @@ services:
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
       SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
 
+  gatewayserver:
+    image: densoftdev/gatewayserver:latest
+    mem_reservation: 700m
+    ports:
+      - "5005:5005"
+    networks:
+      - eazybank-network
+    depends_on:
+      - eurekaserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:5004/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+
 
   accounts:
     image: densoftdev/accounts:latest
@@ -58,14 +79,13 @@ services:
     networks:
       - eazybank-network
     depends_on:
-      - configserver
-      - eurekaserver
+      - gatewayserver
     deploy:
       restart_policy:
         condition: on-failure
-        delay: 35s
+        delay: 45s
         max_attempts: 3
-        window: 120s
+        window: 180s
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
@@ -81,14 +101,13 @@ services:
     networks:
       - eazybank-network
     depends_on:
-      - configserver
-      - eurekaserver
+      - gatewayserver
     deploy:
       restart_policy:
         condition: on-failure
-        delay: 35s
+        delay: 45s
         max_attempts: 3
-        window: 120s
+        window: 180s
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
@@ -104,37 +123,11 @@ services:
     networks:
       - eazybank-network
     depends_on:
-      - configserver
-      - eurekaserver
+      - gatewayserver
     deploy:
       restart_policy:
         condition: on-failure
-        delay: 35s
-        max_attempts: 3
-        window: 120s
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:5004/eureka/
-      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
-
-  gatewayserver:
-    image: densoftdev/gatewayserver:latest
-    mem_reservation: 700m
-    ports:
-      - "5005:5005"
-    networks:
-      - eazybank-network
-    depends_on:
-      - configserver
-      - eurekaserver
-      - cards
-      - loans
-      - accounts
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 60s
+        delay: 45s
         max_attempts: 3
         window: 180s
     environment:
@@ -142,6 +135,8 @@ services:
       SPRING_CONFIG_IMPORT: configserver:http://configserver:5003/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:5004/eureka/
       SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+
+
 
 networks:
   eazybank-network:
